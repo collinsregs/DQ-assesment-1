@@ -15,8 +15,9 @@ const DualDocumentViewer = () => {
         const response = await axios.get(`/documents/${id}`);
         // Assuming the server sends a Blob or URL in the response
         setDocument(response.data); // Update state with fetched document data
-        console.log("response data", response);
+        console.log("response data", response.data);
       } catch (error) {
+        console.log("error from get ", error);
         setError(error);
       }
     };
@@ -34,7 +35,8 @@ const DualDocumentViewer = () => {
 
   return (
     <div>
-      <pre>{document}</pre>
+      <pre>{document.originalText}</pre>
+      <pre>{document.improvedText}</pre>
     </div>
   );
 };

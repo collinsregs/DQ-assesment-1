@@ -9,9 +9,13 @@ const fs = require("fs");
 const pdf = require("pdf-parse");
 const { error } = require("console");
 const pdfExtractor = require("./pdfExtract.cjs");
+const spanReplace = require("./spanReplace.cjs");
+const axios = require("axios");
 
 const app = express();
 const port = 5000;
+
+const url = "http://127.0.0.1:5000/correct";
 
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -48,33 +52,70 @@ app.get("/documents/:id", cors(corsOptions), async (req, res) => {
   const filePath = path.join(__dirname, "uploads", documentId);
 
   try {
-    const data = await fs.promises.readFile(filePath);
-    const contentType = mime.lookup(filePath);
-    const extension = path.extname(filePath).toLowerCase();
-
-    let extractedText;
-
-    if (extension === ".pdf") {
-      extractedText = await pdfExtractor.extractText(filePath);
-      console.log("extracted text", extractedText);
-    } else {
-      // Use textract for non-PDF formats
-      textract.fromFileWithPath(filePath, (err, text) => {
-        if (err) {
-          console.error("Error extracting text:", err);
-          res.status(500).send("Error fetching document");
-        } else {
-          extractedText = text;
-        }
-        // Send response after processing is complete
+    let extractedText = await extract(filePath);
+    getCorrections(url, extractedText)
+      .then((improvedText) => {
+        const responseObject = {
+          originalText: extractedText,
+          improvedText: improvedText,
+        };
+        res.setHeader("Content-Type", "application/json");
+        res.send(responseObject);
+      })
+      .catch((error) => {
+        console.error("Error getting corrections:", error);
+        res.status(500).send("error getting text");
       });
-    }
-    res.setHeader("Content-Type", "text/plain");
-    res.send(extractedText);
-  } catch (err) {
-    console.error("Error extracting text:", err);
-    res.status(500).send("Error fetching document");
+  } catch (error) {
+    console.log("error getting texts", error);
+    res.status(500).send("error getting text");
+    return;
   }
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+async function getCorrections(url, text) {
+  data = { document: text };
+  console.log("getting corrections");
+  formattedText = await axios
+    .post(url, data)
+    .then((response) => {
+      const correctedText = response.data.corrected_text;
+      console.log("corrected text received");
+      let formattedText = spanReplace.extractAndReplace(correctedText);
+      return formattedText;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+
+  return formattedText;
+}
+
+async function extract(filePath) {
+  try {
+    const extension = path.extname(filePath).toLowerCase();
+    let extractedText;
+
+    if (extension === ".pdf") {
+      extractedText = await pdfExtractor.extractText(filePath);
+    } else {
+      // Use textract for non-PDF formats (promise-based approach)
+      extractedText = await new Promise((resolve, reject) => {
+        textract.fromFileWithPath(filePath, (err, text) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(text);
+          }
+        });
+      });
+    }
+
+    return extractedText; // Return the extracted text
+  } catch (err) {
+    console.error("Error extracting text:", err);
+    throw err; // Or handle the error here and return a default value
+  }
+}
