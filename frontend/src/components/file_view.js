@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Viewer } from "@react-pdf-viewer/core"; // Import the Viewer component
-import "@react-pdf-viewer/core/lib/styles/index.css"; // Import the default styles
+// import { Viewer } from "@react-pdf-viewer/core"; // Import the Viewer component
+// import "@react-pdf-viewer/core/lib/styles/index.css"; // Import the default styles
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
