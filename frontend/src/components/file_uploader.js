@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 
 const FileUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -44,8 +45,8 @@ const FileUpload = () => {
 
   const styles = {
     container: {
-      width: "400px",
-      height: "200px",
+      width: "60vw",
+      height: "35vh",
       border: "2px dashed #ccc",
       borderRadius: "5px",
       display: "flex",
@@ -74,28 +75,35 @@ const FileUpload = () => {
 
   return (
     <div div className="file-upload">
-      <div
-        {...getRootProps({
-          style: styles.container,
-          className: isDragActive && styles.dragActive,
-        })}
-      >
-        <input
-          {...getInputProps()}
-          onChange={(event) => setSelectedFile(event.target.files[0])}
-        />
-        <label htmlFor="fileInput">
-          {isDragActive ? (
-            <p style={styles.text}>Drop your file here!</p>
-          ) : (
-            <p style={styles.text}>
-              Drag & drop a file here, or click to select
-            </p>
-          )}
-        </label>
-        <input id="fileInput" type="file" style={styles.fileInput} />
+      <div className="upload-container">
+        <div
+          {...getRootProps({
+            style: styles.container,
+            className: isDragActive && styles.dragActive,
+          })}
+        >
+          <input
+            {...getInputProps()}
+            onChange={(event) => setSelectedFile(event.target.files[0])}
+          />
+          <label htmlFor="fileInput">
+            {isDragActive ? (
+              <p style={styles.text}>Drop your file here!</p>
+            ) : (
+              <p style={styles.text}>
+                Drag & drop a file here, or click to select
+              </p>
+            )}
+          </label>
+          <input id="fileInput" type="file" style={styles.fileInput} />
+        </div>
+        <div className="upload-input-field">
+          <div className="upload-file-name"></div>
+          <button onClick={handleFileUpload}>
+            <ArrowUpwardIcon />
+          </button>
+        </div>
       </div>
-      <button onClick={handleFileUpload}>Upload</button>
       {selectedFile && (
         <div>
           <p style={styles.fileInfo}>File Name: {selectedFile.name}</p>
