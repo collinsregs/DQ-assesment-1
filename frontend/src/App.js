@@ -9,8 +9,16 @@ import Nav from "./components/nav_drawer";
 import SendUser from "./components/send_user";
 
 function App() {
-  const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
-  console.log("user at home", user);
+  const {
+    isAuthenticated,
+    user,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+  } = useAuth0();
+
+  const token = isAuthenticated ? getAccessTokenSilently() : null;
+  console.log("token from gettoken", token);
 
   return (
     <Router>
@@ -25,7 +33,7 @@ function App() {
               <Route path="/" element={<FileUpload />} />
               <Route path="/documents/:id" element={<DualDocumentViewer />} />
             </Routes>
-            <SendUser user={user} />
+            <SendUser user={user} isAuthenticated={isAuthenticated} />
           </div>
         </div>
       </div>

@@ -12,6 +12,8 @@ const pdfExtractor = require("./pdfExtract.cjs");
 const spanReplace = require("./spanReplace.cjs");
 const axios = require("axios");
 
+const db = require("./dbConnect");
+
 const app = express();
 const port = 5000;
 
@@ -24,7 +26,7 @@ const corsOptions = {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, "data/uploads/");
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -38,9 +40,30 @@ app.use(express.json());
 app.post("/user", (req, res) => {
   const user = req.body.user;
   if (user) {
-    console.log("USER", user);
+    console.log(user);
+    db.get(
+      "SELECT * FROM User WHERE User.email = ?",
+      [user.email],
+      (err, existingUser) => {
+        if (err) {
+          console.error("Error checking for existing user:", err.message);
+          return;
+        }
+        console.log("existing user:", existingUser);
+        if (!existingUser) {
+          console.log("adding user");
+          const insertQuery = "INSERT INTO User (name, email) VALUES (?,?)";
+          db.run(insertQuery, [user.name, user.email], (err) => {
+            if (err) {
+              console.error("Error inserting user:", err.message);
+              return res.status(500).send("Internal server error");
+            }
+          });
+        }
+        res.status(200).send("");
+      }
+    );
   }
-  res.status(200).send("");
 });
 
 app.post("/upload", upload.single("file"), (req, res) => {
