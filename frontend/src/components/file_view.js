@@ -35,8 +35,8 @@ const DualDocumentViewer = () => {
 
   return (
     <div>
-      <pre>{document.originalText}</pre>
-      <pre>{document.improvedText}</pre>
+      <div>{document.originalText}</div>
+      <div dangerouslySetInnerHTML={{ __html: document.improvedText }} />
     </div>
   );
 };

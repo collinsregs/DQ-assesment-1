@@ -24,7 +24,7 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-const storage = multer.diskStorage({
+const storage_uploads = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "data/uploads/");
   },
@@ -32,8 +32,17 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
+const storage_improved = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "data/improved/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
-const upload = multer({ storage });
+const upload = multer({ storage_uploads });
+const improved = multer({ storage_improved });
 
 app.use(express.json());
 
@@ -66,13 +75,14 @@ app.post("/user", (req, res) => {
   }
 });
 
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
-    console.log("Uploaded file details:", file);
+    const email = req.headers["user-email"];
 
     const documentId = file.filename;
-
+    userID = await getUserID(email);
+    await addDocument(userID, documentId);
     res.send({ route: `/documents/${documentId}` });
   } catch (error) {
     console.error("File upload error:", error);
@@ -82,10 +92,15 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
 app.get("/documents/:id", cors(corsOptions), async (req, res) => {
   const documentId = req.params.id;
-  const filePath = path.join(__dirname, "uploads", documentId);
+  const filePath_upload = path.join(__dirname, "data/uploads", documentId);
+  const filePath_improve = path.join(__dirname, "data/improved", documentId);
 
   try {
-    let extractedText = await extract(filePath);
+    let extractedText = getDocument(
+      documentId,
+      filePath_upload,
+      filePath_improve
+    );
     getCorrections(url, extractedText)
       .then((improvedText) => {
         const responseObject = {
@@ -150,5 +165,60 @@ async function extract(filePath) {
   } catch (err) {
     console.error("Error extracting text:", err);
     throw err; // Or handle the error here and return a default value
+  }
+}
+
+async function getUserID(email) {
+  let userId = 2; // Default to 1 if user not found
+  const userResult = await db.get("SELECT id FROM User WHERE email = ?", [
+    email,
+  ]);
+  if (userResult) {
+    userId = userResult.id;
+  }
+  return userId;
+}
+
+async function addDocument(documentId, userId) {
+  const insertString =
+    "INSERT INTO Document (id, user_id, upload_date) VALUES (?,?,?)";
+  const date = new Date();
+
+  db.run(insertString, [documentId, userId, date], (err) => {
+    if (err) {
+      console.error("Error inserting document:", err.message);
+    }
+  });
+}
+
+async function getDocument(documentId, filePathUpload, filePathImprove) {
+  try {
+    let extractedText;
+
+    const existingDocument = await db.get(
+      "SELECT * FROM Content WHERE Content.document_id = ?",
+      [documentId]
+    );
+
+    if (existingDocument) {
+      extractedText = await extract(filePathImprove);
+    }
+
+    if (!extractedText) {
+      extractedText = await extract(filePathUpload);
+      await fs.writeFile(filePathImprove, extractedText);
+      db.run(
+        "INSERT INTO Content(id, document_id) VALUES (?,?)",
+        [documentId, documentId],
+        (err) => {
+          console.error("Error inserting content:", err.message);
+        }
+      );
+    }
+
+    return extractedText;
+  } catch (error) {
+    console.error("Error retrieving document:", error.message);
+    // Handle the error appropriately
   }
 }

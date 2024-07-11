@@ -98,3 +98,28 @@
 .icon {
   font-size: 2rem !important;
 }
+.correction {
+  text-decoration: underline;
+}
+.tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltip::before {
+  content: attr(data-edit);
+  position: absolute;
+  top: -20px; /* Adjust as needed */
+  left: 0;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tooltip:hover::before {
+  opacity: 1;
+}

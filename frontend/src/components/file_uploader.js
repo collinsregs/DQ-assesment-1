@@ -3,10 +3,15 @@ import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const FileUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth0();
+
+  const email = isAuthenticated ? user.email : " ";
+  const testUrl = "https://637a9a66-653a-4566-8c2b-271d2989e23c.mock.pstmn.io";
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -23,7 +28,8 @@ const FileUpload = () => {
     try {
       const response = await axios.post("/upload", formData, {
         headers: {
-          "Content-Type": "multipart/form-data", // Set Content-Type header
+          "Content-Type": "multipart/form-data",
+          "user-email ": `${email}`,
         },
       });
       console.log("File upload response:", response.data);
