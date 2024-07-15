@@ -90,6 +90,10 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+app.post("/improve", (req, res) => {
+  console.log(req.body);
+});
+
 app.get("/documents/:id", cors(corsOptions), async (req, res) => {
   const documentId = req.params.id;
   const filePath_upload = path.join(__dirname, "data/uploads", documentId);

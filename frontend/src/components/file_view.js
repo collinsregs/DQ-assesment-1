@@ -9,6 +9,16 @@ const DualDocumentViewer = () => {
   const [document, setDocument] = useState(null);
   const [error, setError] = useState(null);
 
+  function handleSpanClick(originalText, editText) {
+    let data = {
+      originalText: originalText,
+      edit: editText,
+      documentId: id,
+    };
+
+    axios.post("/improve", data);
+  }
+
   useEffect(() => {
     const getDoc = async () => {
       try {
