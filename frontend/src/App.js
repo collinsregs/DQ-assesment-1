@@ -8,36 +8,49 @@ import DualDocumentViewer from "./components/file_view";
 import Nav from "./components/nav_drawer";
 import SendUser from "./components/send_user";
 
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+const theme = createTheme({
+  components: {
+    MuiSvgIcon: {
+      root: {
+        height: "2rem",
+        width: "2rem",
+        color: "var(--color-light)",
+      },
+    },
+  },
+});
 function App() {
   const {
     isAuthenticated,
     user,
-    loginWithRedirect,
-    logout,
+
     getAccessTokenSilently,
   } = useAuth0();
 
   const token = isAuthenticated ? getAccessTokenSilently() : null;
-  console.log("token from gettoken", token);
 
   return (
-    <Router>
-      <div className="App">
-        <div className="main">
-          <div className="nav">
-            <Nav />
-          </div>
-          <div className="content-block-2">
-            <Routes>
-              {/* <Route path="/user" element={<SendUser />} /> */}
-              <Route path="/" element={<FileUpload />} />
-              <Route path="/documents/:id" element={<DualDocumentViewer />} />
-            </Routes>
-            <SendUser user={user} isAuthenticated={isAuthenticated} />
+    <ThemeProvider theme={theme}>
+      <Router>
+        <div className="App">
+          <div className="main">
+            <div className="nav">
+              <Nav />
+            </div>
+            <div className="content-block-2">
+              <Routes>
+                {/* <Route path="/user" element={<SendUser />} /> */}
+                <Route path="/" element={<FileUpload />} />
+                <Route path="/documents/:id" element={<DualDocumentViewer />} />
+              </Routes>
+              <SendUser user={user} isAuthenticated={isAuthenticated} />
+            </div>
           </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 

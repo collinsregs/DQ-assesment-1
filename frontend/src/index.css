@@ -21,9 +21,17 @@ html {
 :root {
   --ff-heading: roboto;
   --ff-body: lato;
+  --ff-logo: Abhaya Libre;
 
-  --color-background: #1a1b26;
-  --color-highlight: #8287be;
-  --color-light: #34364c;
-  --color-text: #ffff;
+  --color-background: var(--5);
+  --color-highlight: var(--4);
+  --color-light: var(--3);
+  --color-text: var(--2);
+  --color-nav: var(--1);
+
+  --1: #0e112f;
+  --2: #0a1121;
+  --3: #d2e1ff;
+  --4: #7f84df;
+  --5: #ffffff;
 }

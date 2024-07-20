@@ -13,23 +13,37 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Roboto:wght@300;400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Abhaya+Libre:wght@300;400;700&family=Roboto:wght@300;400;700&display=swap"
     />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <title>React App</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <script>
+      async function handleSpanClick(originalText, editText) {
+        let url = window.location.href;
+        let arr = url.split("/");
+        let id = arr[arr.length - 1];
+        let data = {
+          originalText: originalText,
+          edit: editText,
+          documentId: id,
+        };
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+        let response = await axios.post("/improve", data);
+        if (response.status === 200) {
+          let originalSpan = document.getElementById(originalText);
+          if (originalSpan) {
+            let newSpan = document.createElement("span");
+            newSpan.textContent = editText;
+            originalSpan.parentNode.replaceChild(newSpan, originalSpan);
+          }
+        }
+      }
+    </script>
   </body>
 </html>

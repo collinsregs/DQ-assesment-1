@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import { MdFileUpload } from "react-icons/md";
+import UploadIcon from "@mui/icons-material/Upload";
+import { FaFileArrowUp } from "react-icons/fa6";
 import { useAuth0 } from "@auth0/auth0-react";
+import { ReactComponent as Logo } from "./logo-full-transparent.svg";
 
 const FileUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -11,11 +14,17 @@ const FileUpload = () => {
   const { isAuthenticated, user } = useAuth0();
 
   const email = isAuthenticated ? user.email : " ";
-  const testUrl = "https://637a9a66-653a-4566-8c2b-271d2989e23c.mock.pstmn.io";
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
       setSelectedFile(acceptedFiles[0]);
+    },
+    accept: {
+      "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
+      "application/msword": [".doc"],
+      "text/plain": [".txt"],
     },
   });
 
@@ -51,9 +60,9 @@ const FileUpload = () => {
 
   const styles = {
     container: {
-      width: "60vw",
-      height: "35vh",
-      border: "2px dashed #ccc",
+      width: "40vw",
+      height: "20vh",
+      border: "2px dashed var(--color-text)",
       borderRadius: "5px",
       display: "flex",
       flexDirection: "column",
@@ -61,17 +70,18 @@ const FileUpload = () => {
       alignItems: "center",
       cursor: "pointer",
       marginBottom: "20px",
+      // backgroundColor: "var(--color-light-background)",
     },
     dragActive: {
-      border: "2px dashed #333",
+      border: "2px dashed var(--color-text)",
     },
     text: {
       textAlign: "center",
-      color: "#777",
+      color: "var(--color-text)",
     },
     fileInfo: {
       fontSize: ".8rem",
-      color: "#333",
+      color: "var(--color-highlight)",
       margin: "10px 0",
     },
     fileInput: {
@@ -81,6 +91,8 @@ const FileUpload = () => {
 
   return (
     <div div className="file-upload">
+      <Logo className="logo" />
+
       <div className="upload-container">
         <div
           {...getRootProps({
@@ -93,7 +105,9 @@ const FileUpload = () => {
             onChange={(event) => setSelectedFile(event.target.files[0])}
           />
           <label htmlFor="fileInput">
-            {isDragActive ? (
+            {selectedFile ? (
+              <FaFileArrowUp className="file-input" />
+            ) : isDragActive ? (
               <p style={styles.text}>Drop your file here!</p>
             ) : (
               <p style={styles.text}>
@@ -104,21 +118,14 @@ const FileUpload = () => {
           <input id="fileInput" type="file" style={styles.fileInput} />
         </div>
         <div className="upload-input-field">
-          <div className="upload-file-name"></div>
-          <button onClick={handleFileUpload}>
-            <ArrowUpwardIcon />
+          <div className="upload-file-name">
+            {selectedFile ? selectedFile.name : ""}
+          </div>
+          <button className="upload-button" onClick={handleFileUpload}>
+            <MdFileUpload className="upload-button-svg" />
           </button>
         </div>
       </div>
-      {selectedFile && (
-        <div>
-          <p style={styles.fileInfo}>File Name: {selectedFile.name}</p>
-          <p style={styles.fileInfo}>File Type: {selectedFile.type}</p>
-          <p style={styles.fileInfo}>
-            File Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-          </p>
-        </div>
-      )}
     </div>
   );
 };

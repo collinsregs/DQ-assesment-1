@@ -10,6 +10,7 @@ gf = Gramformer(models=1, use_gpu=False)  # 1 = corrector
 def correct_sentence():
   data = request.get_json()
   sentence = data.get('document')
+  print("text:",sentence)
   lines = sentence.split("\n")
   
   def getCorrections(sentence):

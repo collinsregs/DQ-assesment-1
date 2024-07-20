@@ -7,7 +7,7 @@ function extractAndReplace(text) {
     const type = match[1];
     const edit = match[2];
     const originalText = match[3];
-    const replacement = `<span class="correction tooltip" data-original="${originalText}"  data-edit="${edit}" onclick="handleSpanClick('${originalText}','${edit}')">${originalText}</span>`;
+    const replacement = `<span class="correction tooltip" id="${originalText}" data-original="${originalText}"  data-edit="${edit}" onclick="handleSpanClick('${originalText}','${edit}')">${originalText}</span>`;
     replacedText = replacedText.replace(match[0], replacement);
   }
 

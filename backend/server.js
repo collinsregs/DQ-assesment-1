@@ -5,7 +5,7 @@ const path = require("path");
 const mime = require("mime-types");
 const { Document } = require("pdf-lib");
 const textract = require("textract");
-const fs = require("fs");
+const fs = require("fs/promises");
 const pdf = require("pdf-parse");
 const { error } = require("console");
 const pdfExtractor = require("./pdfExtract.cjs");
@@ -24,7 +24,7 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-const storage_uploads = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "data/uploads/");
   },
@@ -32,24 +32,14 @@ const storage_uploads = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-const storage_improved = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "data/improved/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
 
-const upload = multer({ storage_uploads });
-const improved = multer({ storage_improved });
+const upload = multer({ storage });
 
 app.use(express.json());
 
 app.post("/user", (req, res) => {
   const user = req.body.user;
   if (user) {
-    console.log(user);
     db.get(
       "SELECT * FROM User WHERE User.email = ?",
       [user.email],
@@ -78,11 +68,15 @@ app.post("/user", (req, res) => {
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
+    console.log("file at uploads", file);
     const email = req.headers["user-email"];
 
     const documentId = file.filename;
-    userID = await getUserID(email);
-    await addDocument(userID, documentId);
+    const userID = await getUserID(email);
+    console.log("user id:", userID);
+    await addDocument(documentId, userID);
+
+    console.log("document id at upload redirect:", documentId);
     res.send({ route: `/documents/${documentId}` });
   } catch (error) {
     console.error("File upload error:", error);
@@ -91,24 +85,27 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 });
 
 app.post("/improve", (req, res) => {
-  console.log(req.body);
+  const originalText = req.body.originalText;
+  const editText = req.body.edit;
+  const id = req.body.documentId;
+  const id_2 = id.replace("%20", " ");
+  const document_name = path.parse(id_2).name;
+  const full_document_name = `${document_name}.txt`;
+  const filePath = `data/improved/${full_document_name}`;
+  findAndReplace(filePath, originalText, editText).then(res.status(200).send());
 });
 
 app.get("/documents/:id", cors(corsOptions), async (req, res) => {
   const documentId = req.params.id;
-  const filePath_upload = path.join(__dirname, "data/uploads", documentId);
-  const filePath_improve = path.join(__dirname, "data/improved", documentId);
 
   try {
-    let extractedText = getDocument(
-      documentId,
-      filePath_upload,
-      filePath_improve
-    );
+    let filePath = "data/uploads/" + documentId;
+    let originalText = await extract(filePath);
+    let extractedText = await getDocument(documentId);
     getCorrections(url, extractedText)
       .then((improvedText) => {
         const responseObject = {
-          originalText: extractedText,
+          originalText: originalText,
           improvedText: improvedText,
         };
         res.setHeader("Content-Type", "application/json");
@@ -124,8 +121,27 @@ app.get("/documents/:id", cors(corsOptions), async (req, res) => {
     return;
   }
 });
-
+app.get("/userHistory", async (req, res) => {
+  const email = req.headers["user-email"];
+  const userID = await getUserID(email);
+  const history = await getHistory(userID);
+  res.send(history);
+});
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+async function getHistory(userID) {
+  const queryString = "SELECT * FROM Document WHERE user_id = ? ";
+  return new Promise((resolve, reject) => {
+    db.all(queryString, [userID], (err, history) => {
+      if (err) {
+        console.error(err);
+        reject(err);
+      } else {
+        resolve(history);
+      }
+    });
+  });
+}
 
 async function getCorrections(url, text) {
   data = { document: text };
@@ -173,14 +189,18 @@ async function extract(filePath) {
 }
 
 async function getUserID(email) {
-  let userId = 2; // Default to 1 if user not found
-  const userResult = await db.get("SELECT id FROM User WHERE email = ?", [
-    email,
-  ]);
-  if (userResult) {
-    userId = userResult.id;
-  }
-  return userId;
+  return new Promise((resolve, reject) => {
+    let userId = 2; // Default to 1 if user not found
+    db.get("SELECT id FROM User WHERE email = ?", [email], (err, user) => {
+      if (err) {
+        console.log("error getting user id", err);
+        reject(err);
+      } else {
+        userId = user.id;
+        resolve(userId);
+      }
+    });
+  });
 }
 
 async function addDocument(documentId, userId) {
@@ -195,34 +215,85 @@ async function addDocument(documentId, userId) {
   });
 }
 
-async function getDocument(documentId, filePathUpload, filePathImprove) {
+async function getDocument(documentId) {
   try {
     let extractedText;
-
-    const existingDocument = await db.get(
-      "SELECT * FROM Content WHERE Content.document_id = ?",
-      [documentId]
+    const filePath_upload = path.join(__dirname, "data/uploads", documentId);
+    const document_name = path.parse(documentId).name;
+    const full_document_name = `${document_name}.txt`;
+    const txtFilePath = path.join(
+      __dirname,
+      "data/improved",
+      full_document_name
     );
 
+    existingDocument = await getDocumentById(documentId);
+    console.log("existing document", existingDocument);
     if (existingDocument) {
-      extractedText = await extract(filePathImprove);
-    }
-
-    if (!extractedText) {
-      extractedText = await extract(filePathUpload);
-      await fs.writeFile(filePathImprove, extractedText);
+      extractedText = await extract(txtFilePath);
+    } else {
+      extractedText = await extract(filePath_upload);
+      await fs.writeFile(txtFilePath, extractedText, "utf-8");
       db.run(
         "INSERT INTO Content(id, document_id) VALUES (?,?)",
-        [documentId, documentId],
+        [full_document_name, documentId],
         (err) => {
-          console.error("Error inserting content:", err.message);
+          if (err) {
+            console.error("Error inserting content:", err.message);
+          }
         }
       );
     }
-
     return extractedText;
   } catch (error) {
     console.error("Error retrieving document:", error.message);
     // Handle the error appropriately
+  }
+}
+function getDocumentById(documentId) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT * FROM Content WHERE Content.document_id = ?",
+      [documentId],
+      (err, existingUser) => {
+        if (err) {
+          console.log("", err.message);
+          reject(err);
+        } else {
+          console.log("inside:", existingUser);
+          resolve(existingUser);
+        }
+      }
+    );
+  });
+}
+
+async function findAndReplace(filePath, searchText, replaceText) {
+  try {
+    // Read the file content
+    const content = await fs.readFile(filePath, "utf8");
+    console.log("content:", content);
+
+    // Perform the replacement using a regular expression
+    let replacedContent = content;
+    let currentPos = 0;
+    while (
+      (currentPos = replacedContent.indexOf(searchText, currentPos)) !== -1
+    ) {
+      replacedContent =
+        replacedContent.slice(0, currentPos) +
+        replaceText +
+        replacedContent.slice(currentPos + searchText.length);
+      currentPos += replaceText.length; // Adjust search position to avoid infinite loop
+    }
+    console.log("replaced Content:", replacedContent);
+
+    // Write the updated content back to the file
+    await fs.writeFile(filePath, replacedContent, "utf8");
+
+    console.log(`Text replaced in file: ${filePath}`);
+  } catch (error) {
+    console.error(`Error replacing text: ${error.message}`);
+    // Handle the error appropriately (e.g., send an error response)
   }
 }
