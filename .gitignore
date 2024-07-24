@@ -1,3 +1,3 @@
-backend/data/improved
-backend/data/database
-backend/data/uploads
+backend/data/improved/*
+backend/data/database/*
+backend/data/uploads/*
