@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node server",
     "dev": "nodemon server"
   },
@@ -13,10 +13,12 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.7.2",
+    "blob-polyfill": "^9.0.20240710",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-openid-connect": "^2.17.1",
     "file-type": "^19.0.0",
+    "jest": "^29.7.0",
     "mime-types": "^2.1.35",
     "multer": "^1.4.5-lts.1",
     "pdf-lib": "^1.17.1",

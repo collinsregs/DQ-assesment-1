@@ -1,15 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { MdFileUpload } from "react-icons/md";
+import { MdFileDownload } from "react-icons/md";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
+import { animateFill } from "tippy.js";
+import "tippy.js/dist/backdrop.css";
+import "tippy.js/animations/shift-away.css";
+import { roundArrow } from "tippy.js";
+import { followCursor } from "tippy.js";
+import { saveAs } from "file-saver";
+
+const useMutationObserver = (
+  ref,
+  callback,
+  options = {
+    attributes: true,
+    characterData: true,
+    childList: true,
+    subtree: true,
+  }
+) => {
+  React.useEffect(() => {
+    if (ref.current) {
+      console.log("new observer setup", ref.current);
+      const observer = new MutationObserver(callback);
+      observer.observe(ref.current, options);
+      return () => observer.disconnect();
+    }
+  }, [callback, options]);
+};
 
 const DualDocumentViewer = () => {
+  const mutationRef = React.useRef();
   const { id } = useParams();
   const [document, setDocument] = useState(null);
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   let parts = id.split("-");
   let name = parts[1].split(".")[0];
+  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [fileData, setFileData] = useState(null);
 
   const getDoc = async () => {
     try {
@@ -23,6 +56,21 @@ const DualDocumentViewer = () => {
     }
   };
 
+  async function downloadFile() {
+    try {
+      const response = await axios.get(`/download/${id}`, {
+        responseType: "blob",
+      });
+      const blob = new Blob([response.data], { type: "application/txt" }); // Set appropriate MIME type
+      saveAs(blob, `Docuboost_${name}.txt`);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  }
+  useEffect(() => {
+    setDocument(null);
+  }, [id]);
+
   useEffect(() => {
     getDoc();
   }, [id, refreshKey]);
@@ -32,6 +80,31 @@ const DualDocumentViewer = () => {
     setDocument(null);
     setRefreshKey((prevKey) => prevKey + 1);
   };
+
+  const createTooltips = useCallback(() => {
+    if (mutationRef.current) {
+      console.log("createing tooltip");
+      tippy(".correction.tooltip", {
+        content(reference) {
+          return reference.getAttribute("data-edit");
+        },
+        animateFill: true,
+        plugins: [animateFill],
+
+        arrow: roundArrow,
+      });
+    }
+  }, []);
+  // useMutationObserver(mutationRef, createTooltips);
+
+  useEffect(() => {
+    if (document && document.improvedText) {
+      // Delay to ensure DOM updates before initializing tooltips
+      setTimeout(() => {
+        createTooltips();
+      }, 100);
+    }
+  }, [document, createTooltips]);
 
   if (error) {
     return (
@@ -68,14 +141,20 @@ const DualDocumentViewer = () => {
     <div className="dual-document-viewer">
       <div className="document-title">{name}</div>
       <div className="doc-container">
-        <div className="doc-content">
+        <div className="doc-content original-text">
           <div className="content">{document.originalText}</div>
-          <div className="text-title">original text</div>
+          <div className="text-title left">
+            <div className="content-button">
+              <MdFileUpload className="content-icon" />{" "}
+              <div className="content-button-text">Upload</div>
+            </div>
+          </div>
         </div>
         <div className="divider"></div>
         <div className="doc-content">
           {document.improvedText ? (
             <div
+              ref={mutationRef}
               className="content"
               dangerouslySetInnerHTML={{ __html: document.improvedText }}
             />
@@ -89,7 +168,21 @@ const DualDocumentViewer = () => {
               </span>
             </div>
           )}
-          <div className="text-title">Improved Text</div>
+          <div className="text-title">
+            <div className="content-button" onClick={() => downloadFile()}>
+              <div className="content-button-text">Download</div>
+              <MdFileDownload className="content-icon" />
+              {/* {downloadUrl && (
+                <a
+                  href={downloadUrl}
+                  download="myfile.pdf"
+                  style={{ display: "none" }}
+                >
+                  Download Link
+                </a>
+              )} */}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -87,6 +87,11 @@ const FileUpload = () => {
     fileInput: {
       display: "none",
     },
+    "@media only screen and (max-width: 500px)": {
+      container: {
+        width: "60vw",
+      },
+    },
   };
 
   return (

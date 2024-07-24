@@ -7,6 +7,7 @@ import FileUpload from "./components/file_uploader";
 import DualDocumentViewer from "./components/file_view";
 import Nav from "./components/nav_drawer";
 import SendUser from "./components/send_user";
+import NavMobile from "./components/drawer_mobile";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
@@ -22,20 +23,14 @@ const theme = createTheme({
   },
 });
 function App() {
-  const {
-    isAuthenticated,
-    user,
-
-    getAccessTokenSilently,
-  } = useAuth0();
-
-  const token = isAuthenticated ? getAccessTokenSilently() : null;
+  const { isAuthenticated, user } = useAuth0();
 
   return (
     <ThemeProvider theme={theme}>
       <Router>
         <div className="App">
           <div className="main">
+            <NavMobile />
             <div className="nav">
               <Nav />
             </div>

@@ -6,18 +6,23 @@ const mime = require("mime-types");
 const { Document } = require("pdf-lib");
 const textract = require("textract");
 const fs = require("fs/promises");
+const fsR = require("fs");
 const pdf = require("pdf-parse");
 const { error } = require("console");
 const pdfExtractor = require("./pdfExtract.cjs");
 const spanReplace = require("./spanReplace.cjs");
 const axios = require("axios");
+const { Blob } = require("blob-polyfill");
 
-const db = require("./dbConnect");
+const { connectToDatabase } = require("./dbConnect");
+
+const db = connectToDatabase();
 
 const app = express();
 const port = 5000;
 
 const url = "http://127.0.0.1:5000/correct";
+const urlGetText = "http://127.0.0.1:5000/getText";
 
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -95,6 +100,13 @@ app.post("/improve", (req, res) => {
   findAndReplace(filePath, originalText, editText).then(res.status(200).send());
 });
 
+app.get("/download/:id", (req, res) => {
+  const id = req.params.id;
+  let name = id.split(".")[0];
+  let improvedId = name + ".txt";
+  res.download(`./data/improved/${improvedId}`, "myfile.pdf"); // Specify actual file path
+});
+
 app.get("/documents/:id", cors(corsOptions), async (req, res) => {
   const documentId = req.params.id;
 
@@ -167,7 +179,15 @@ async function extract(filePath) {
     let extractedText;
 
     if (extension === ".pdf") {
-      extractedText = await pdfExtractor.extractText(filePath);
+      const formData = new FormData();
+      const file = fsR.readFileSync(filePath);
+      const fileBlob = new Blob([file], { type: "application/pdf" });
+      formData.append("file", fileBlob, "file.pdf");
+      const response = await axios.post(urlGetText, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      extractedText = response.data.text;
+      console.log("extracted text:", response.data);
     } else {
       // Use textract for non-PDF formats (promise-based approach)
       extractedText = await new Promise((resolve, reject) => {
@@ -221,6 +241,7 @@ async function getDocument(documentId) {
     const filePath_upload = path.join(__dirname, "data/uploads", documentId);
     const document_name = path.parse(documentId).name;
     const full_document_name = `${document_name}.txt`;
+    console.log("full", document_name);
     const txtFilePath = path.join(
       __dirname,
       "data/improved",
@@ -238,6 +259,7 @@ async function getDocument(documentId) {
         "INSERT INTO Content(id, document_id) VALUES (?,?)",
         [full_document_name, documentId],
         (err) => {
+          console.log("inserting into content");
           if (err) {
             console.error("Error inserting content:", err.message);
           }

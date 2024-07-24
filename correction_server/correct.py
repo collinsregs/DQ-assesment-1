@@ -1,5 +1,7 @@
 from gramformer import Gramformer
 from flask import Flask, request, jsonify
+from pdfminer.high_level import extract_text
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -32,6 +34,35 @@ def correct_sentence():
     correct_text += corrected_line + "\n"
     
   return jsonify({'corrected_text': correct_text})
+
+@app.route("/getText", methods=["POST"])
+def get_text():
+    print("request:", request)
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    try:
+        file_buffer = BytesIO(file.read())
+        file_buffer.seek(0)  # Ensure the buffer is at the beginning
+
+        # Debugging: Check the content of the file buffer
+        print("File buffer content:", file_buffer.getvalue()[:100])  # Print first 100 bytes for inspection
+
+        text = extract_text(file_buffer)
+
+        # Debugging: Check the extracted text
+        print("Extracted text:", text)
+
+        return jsonify({"text": text if text else "No text extracted"})
+    except Exception as e:
+        print("error:", e)
+        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == '__main__':

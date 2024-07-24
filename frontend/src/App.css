@@ -66,6 +66,7 @@ button {
 }
 .upload-input-field {
   display: flex;
+  overflow: hidden;
   width: 100%;
   /* padding: 1%; */
   background-color: var(--color-light);
@@ -90,7 +91,7 @@ button {
 .nav {
   position: fixed;
   height: 98vh;
-  max-width: 8vw;
+  /* max-width: 8vw; */
   padding: 1%;
   background-color: var(--color-nav);
   flex-shrink: 0;
@@ -125,30 +126,48 @@ button {
 }
 
 .correction {
-  text-decoration: underline;
+  cursor: pointer;
+  border-bottom: 1px solid red;
 }
-.tooltip {
+.correction:hover {
+  border-bottom: 2px solid red;
+}
+/* .tooltip {
   position: relative;
   cursor: pointer;
-}
+} */
 
-.tooltip::before {
+/* .tooltip::before {
   content: attr(data-edit);
   position: absolute;
-  top: -20px; /* Adjust as needed */
+
+  transform: translateY(-50%);
   left: 0;
   background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  padding: 4px;
+  
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 0.8rem;
   opacity: 0;
   transition: opacity 0.3s ease;
-}
+} */
+/* .tooltip:after {
+  content: "";
+  position: absolute;
+  
+  left: 100%;
+  margin-left: -5px;
+  
+  transform: translateY(-50%);
+  
+  border: 10px solid #000;
+  border-color: transparent black transparent transparent;
+  opacity: 0;
+} */
 
-.tooltip:hover::before {
+/* .tooltip:hover:before,
+.tooltip:hover:after {
   opacity: 1;
-}
+} */
 
 .no-wrap {
   text-wrap: nowrap;
@@ -180,6 +199,7 @@ button {
   display: flex;
   justify-items: center;
   background-color: var(--color-highlight);
+  transition: all 0.3s ease-in-out;
 }
 .upload-button:hover {
   color: var(--color-light);
@@ -187,7 +207,9 @@ button {
 .upload-button-svg {
   height: 2rem;
   width: 2rem;
+  transition: all 0.3s ease-in-out;
 }
+
 .bold {
   font-weight: bold;
   color: var(--color-light);
@@ -235,7 +257,7 @@ button {
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
-  height: 100%;
+  height: 94%;
   width: 100%;
 }
 .doc-content {
@@ -247,14 +269,15 @@ button {
 
   align-items: center;
   flex-direction: column;
+  overflow: hidden;
 }
 .divider {
   height: 100%;
   border: solid;
   border-width: 1px;
   border-color: rgba(0, 0, 0, 0.3);
-  margin-left: 2.5%;
-  margin-right: 2.5%;
+  /* margin-left: 0.5%;
+  margin-right: 0.5%; */
 }
 .dual-document-viewer {
   padding: 2%;
@@ -271,12 +294,15 @@ button {
   -ms-border-radius: 0.5%;
   -o-border-radius: 0.5%;
   align-items: center;
-  box-shadow: 1px 5px 15px var(--color-light);
+  box-shadow: 1px 2px 50px var(--color-light);
 }
 .content {
   height: 100%;
   line-height: 200%;
   padding-top: 5%;
+  padding-left: 5%;
+  padding-right: 5%;
+  overflow: scroll;
 }
 
 .content-warning {
@@ -294,12 +320,21 @@ button {
   border-bottom: rgba(0, 0, 0, 0.3);
   border-width: 2px;
   border-bottom-style: solid;
+  display: flex;
+  justify-content: center;
+  padding: 1%;
 }
 .text-title {
-  font-size: 1.5rem;
-  width: 100%;
+  /* font-size: 1.5rem; */
+  width: 96%;
   display: flex;
   justify-content: right;
+  padding: 2.5%;
+  /* padding-right: 5%; */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.left {
+  justify-content: left;
 }
 /* HTML: <div class="loader"></div> */
 .loader {
@@ -334,4 +369,73 @@ button {
 .logo {
   width: 60%;
   height: 60%;
+}
+
+.content-button {
+  display: flex;
+  justify-content: center;
+  padding: 2%;
+  width: 30%;
+  background-color: var(--color-light);
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -o-border-radius: 2px;
+  transition: all 0.1s ease-in-out;
+  -webkit-transition: all 0.1s ease-in-out;
+  -moz-transition: all 0.1s ease-in-out;
+  -ms-transition: all 0.1s ease-in-out;
+  -o-transition: all 0.1s ease-in-out;
+}
+.content-button:hover {
+  /* height: 100.1%; */
+  color: var(--color-light);
+  background-color: var(--color-highlight);
+}
+
+.content-icon {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+.content-button-text {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.nav-mobile {
+  display: none;
+}
+.nav-mobile-button {
+  color: var(--color-light);
+}
+
+.css-4t3x6l-MuiPaper-root-MuiDrawer-paper {
+  background-color: var(--color-nav) !important;
+}
+.menu-icon {
+  fill: var(--color-nav) !important;
+}
+
+@media only screen and (max-width: 500px) {
+  .nav {
+    display: none;
+  }
+  .upload-container {
+    width: 80%;
+  }
+  .nav-mobile {
+    display: block;
+    position: absolute;
+    height: 10%;
+  }
+  .new_file {
+    padding-left: 10%;
+  }
+  .divider {
+    display: none;
+  }
+  .original-text {
+    display: none;
+  }
 }
