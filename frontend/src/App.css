@@ -438,4 +438,7 @@ button {
   .original-text {
     display: none;
   }
+  .nav-item-text {
+    width: 90%;
+  }
 }

@@ -210,7 +210,7 @@ async function extract(filePath) {
 
 async function getUserID(email) {
   return new Promise((resolve, reject) => {
-    let userId = 2; // Default to 1 if user not found
+    let userId = null; // Default to 1 if user not found
     db.get("SELECT id FROM User WHERE email = ?", [email], (err, user) => {
       if (err) {
         console.log("error getting user id", err);
