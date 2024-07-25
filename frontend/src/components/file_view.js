@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MdFileUpload } from "react-icons/md";
 import { MdFileDownload } from "react-icons/md";
@@ -10,28 +9,7 @@ import { animateFill } from "tippy.js";
 import "tippy.js/dist/backdrop.css";
 import "tippy.js/animations/shift-away.css";
 import { roundArrow } from "tippy.js";
-import { followCursor } from "tippy.js";
 import { saveAs } from "file-saver";
-
-const useMutationObserver = (
-  ref,
-  callback,
-  options = {
-    attributes: true,
-    characterData: true,
-    childList: true,
-    subtree: true,
-  }
-) => {
-  React.useEffect(() => {
-    if (ref.current) {
-      console.log("new observer setup", ref.current);
-      const observer = new MutationObserver(callback);
-      observer.observe(ref.current, options);
-      return () => observer.disconnect();
-    }
-  }, [callback, options]);
-};
 
 const DualDocumentViewer = () => {
   const mutationRef = React.useRef();
@@ -41,8 +19,6 @@ const DualDocumentViewer = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   let parts = id.split("-");
   let name = parts[1].split(".")[0];
-  const [downloadUrl, setDownloadUrl] = useState(null);
-  const [fileData, setFileData] = useState(null);
 
   const getDoc = async () => {
     try {

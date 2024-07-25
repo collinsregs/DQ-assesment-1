@@ -3,7 +3,6 @@ import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { MdFileUpload } from "react-icons/md";
-import UploadIcon from "@mui/icons-material/Upload";
 import { FaFileArrowUp } from "react-icons/fa6";
 import { useAuth0 } from "@auth0/auth0-react";
 import { ReactComponent as Logo } from "./logo-full-transparent.svg";
@@ -43,11 +42,6 @@ const FileUpload = () => {
       });
       console.log("File upload response:", response.data);
       if (response.data.route) {
-        // Get the navigate function
-        const routeParts = response.data.route.split("/");
-        const id = routeParts[2]; // Assuming the ID is always at index 2
-        // console.log("Extracted ID:", id);
-
         navigate(response.data.route);
       }
 
@@ -95,7 +89,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div div className="file-upload">
+    <div data-testId="file-upload-container" div className="file-upload">
       <Logo className="logo" />
 
       <div className="upload-container">

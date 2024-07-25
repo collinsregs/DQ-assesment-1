@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -36,7 +35,6 @@ function App() {
             </div>
             <div className="content-block-2">
               <Routes>
-                {/* <Route path="/user" element={<SendUser />} /> */}
                 <Route path="/" element={<FileUpload />} />
                 <Route path="/documents/:id" element={<DualDocumentViewer />} />
               </Routes>
