@@ -11,7 +11,6 @@
     "@mui/material": "^5.16.0",
     "@progress/kendo-react-upload": "^8.1.1",
     "@reduxjs/toolkit": "^2.2.6",
-    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.2",
     "file-saver": "^2.0.5",
@@ -60,7 +59,10 @@
     "@babel/plugin-transform-modules-commonjs": "^7.24.8",
     "@babel/preset-env": "^7.24.8",
     "@babel/preset-react": "^7.24.7",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "13.1",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.2.3"
   }
 }

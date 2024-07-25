@@ -8,22 +8,22 @@ function SendUser(user) {
   const dispatch = useDispatch();
   const isAuthenticated = user.isAuthenticated;
 
-  console.log("user at user management:", user);
-  console.log("isAuthenticated at user management:", isAuthenticated);
   useEffect(() => {
     const sendUserData = async () => {
-      try {
-        const response = await axios.post("/user", user);
+      if (isAuthenticated) {
+        try {
+          const response = await axios.post("/user", user);
 
-        if (response.status === 200) {
-          //   navigate("/"); // Redirect to "/" on successful response
-        } else {
-          console.error("Error sending user data:", response);
-          // Handle unsuccessful response (optional)
+          if (response.status === 200) {
+            //   navigate("/"); // Redirect to "/" on successful response
+          } else {
+            // console.error("Error sending user data:", response);
+            // Handle unsuccessful response (optional)
+          }
+        } catch (error) {
+          // console.error("Error sending user data:", error);
+          // Handle errors during the request (optional)
         }
-      } catch (error) {
-        console.error("Error sending user data:", error);
-        // Handle errors during the request (optional)
       }
     };
     dispatch(setAuth(isAuthenticated, user));

@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import Tooltip from "@mui/material/Tooltip";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -11,12 +12,12 @@ function LogoutButton(prop) {
       <button onClick={() => logout()}>
         {isListOpen ? (
           <div className="profile-box">
-            <LogoutIcon />
+            <LogoutIcon data-testid="LogoutIcon" />
             <div>Logout</div>
           </div>
         ) : (
           <div className="profile-box">
-            <LogoutIcon />
+            <LogoutIcon data-testid="LogoutIcon" />
           </div>
         )}
       </button>
