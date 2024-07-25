@@ -65,7 +65,7 @@ Note: The actual port numbers might vary depending on your system configuration.
 - Backend: Express
 - Correction Server: Flask AI
 - Correction: Gramformer
-- Text Extraction: textract.js
+- Text Extraction: textract.js and pdfMiner.six
 - Authentication: Auth0
 
 ## Usage
