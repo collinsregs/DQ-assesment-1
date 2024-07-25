@@ -15,7 +15,8 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.2",
     "file-saver": "^2.0.5",
-    "jest": "^27.5.1",
+    "framer-motion": "^11.3.17",
+    "mdb-react-ui-kit": "^8.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
@@ -29,7 +30,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts jest",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -53,5 +54,8 @@
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "index.js",
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^27.5.1"
+  }
 }

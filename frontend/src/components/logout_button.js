@@ -1,27 +1,22 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import AccountBoxIcon from "@mui/icons-material/AccountBox";
-import { Navigate, useNavigate } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 function LogoutButton(prop) {
   const { isListOpen } = prop;
-  const navigate = useNavigate();
-
-  function navigateProfile() {
-    navigate("/profile");
-  }
+  const { logout } = useAuth0();
 
   return (
-    <Tooltip title="View Profile" arrow placement="right">
-      <button onClick={() => navigateProfile()}>
+    <Tooltip title="Logout" arrow placement="right">
+      <button onClick={() => logout()}>
         {isListOpen ? (
           <div className="profile-box">
-            <AccountBoxIcon />
-            <div>Profile</div>
+            <LogoutIcon />
+            <div>Logout</div>
           </div>
         ) : (
           <div className="profile-box">
-            <AccountBoxIcon />
+            <LogoutIcon />
           </div>
         )}
       </button>
